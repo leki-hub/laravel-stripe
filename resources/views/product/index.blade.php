@@ -17,10 +17,10 @@
     @endforeach
 </div>
 <p>
-{{-- <form action="{{route('checkout')}}" method="POST">
+<form action="{{route('checkout')}}" method="POST">
     @csrf
     <button>Checkout</button>
-</form> --}}
+</form>
 </p>
 </body>
 </html>
