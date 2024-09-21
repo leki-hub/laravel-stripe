@@ -95,4 +95,7 @@ class ProductController extends Controller
         return view('product.cancel');
     }
 
+    public function webhook(){
+        
+    }
 }
