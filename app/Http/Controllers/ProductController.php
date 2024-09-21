@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use Stripe\Stripe;
+use Stripe\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Stripe\Checkout\Session;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 
 class ProductController extends Controller
@@ -60,8 +63,33 @@ class ProductController extends Controller
         return redirect($session->url);
     }
     
-    public function success(){
-        return view('product.checkout.success');
+    public function success(Request $request){
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+         // $sessionId = $request->session_id;
+         $sessionId = $request->get('session_id');
+        $stripe = new \Stripe\StripeClient('sk_test_51Q11JvBMsvEsQY0veDrPMRok8WBl2I91D16voO8dizOCONAj07ZOUltcTVtWUHxyNcyfMNcwMAI4yqfo3CMXaDIg00MZgR4mmt');
+       
+        $session = $stripe->checkout->sessions->retrieve($_GET['session_id']);
+      
+        try {
+
+            if(!$session){
+                throw new NotFoundHttpException(404);
+            }
+            $customer = $stripe->customers->retrieve($session->customer);
+            $order = Order::where('session_id', $sessionId)->where('status','unpaid')->first();
+            if (!$order) {
+               throw new NotFoundHttpException(404);
+            }
+            $order->status= 'paid';
+            $order->save();
+            return view('product.checkout.success',compact('customer'));
+        } catch (\Throwable $th) {
+               throw new NotFoundHttpException(404);
+        }
+      
+       
+    
     }
     public function cancel(){
         return view('product.cancel');
